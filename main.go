@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -10,13 +11,18 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
-	response, bytes, errors := gorequest.New().Get(url).Timeout(5 * time.Second).Retry(2, 3*time.Second).EndBytes()
+	response, bytes, errors := gorequest.New().Get(url).Timeout(5*time.Second).Retry(2, 3*time.Second).EndBytes()
 	if nil != errors {
 		log.Printf("get url [%s] failed: %v", url, errors)
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
-		w.WriteHeader(response.StatusCode)
+		header := w.Header()
+		for k, v := range response.Header {
+			header.Add(k, fmt.Sprintf("%s", v))
+		}
+
 		w.Write(bytes)
+		w.WriteHeader(response.StatusCode)
 	}
 }
 
