@@ -14,6 +14,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	destURL := r.URL.Query().Get("url")
 	if _, e := url.ParseRequestURI(destURL); nil != e {
 		w.WriteHeader(http.StatusBadRequest)
+
 		return
 	}
 
@@ -21,15 +22,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if nil != errors {
 		log.Printf("get url [%s] failed: %v", destURL, errors)
 		w.WriteHeader(http.StatusInternalServerError)
-	} else {
-		header := w.Header()
-		for k, v := range response.Header {
-			header.Add(k, fmt.Sprintf("%s", v))
-		}
 
-		w.Write(bytes)
-		w.WriteHeader(response.StatusCode)
+		return
 	}
+
+	header := w.Header()
+	for k, v := range response.Header {
+		header.Add(k, fmt.Sprintf("%s", v))
+	}
+
+	w.WriteHeader(response.StatusCode)
+	w.Write(bytes)
 }
 
 func main() {
