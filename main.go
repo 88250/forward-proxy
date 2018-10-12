@@ -4,16 +4,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/parnurzeal/gorequest"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	url := r.URL.Query().Get("url")
-	response, bytes, errors := gorequest.New().Get(url).Timeout(5*time.Second).Retry(2, 3*time.Second).EndBytes()
+	destURL := r.URL.Query().Get("url")
+	if _, e := url.ParseRequestURI(destURL); nil != e {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	response, bytes, errors := gorequest.New().Get(destURL).Timeout(5*time.Second).Retry(2, 3*time.Second).EndBytes()
 	if nil != errors {
-		log.Printf("get url [%s] failed: %v", url, errors)
+		log.Printf("get url [%s] failed: %v", destURL, errors)
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		header := w.Header()
