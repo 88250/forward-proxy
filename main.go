@@ -18,7 +18,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, bytes, errors := gorequest.New().Get(destURL).Timeout(5*time.Second).Retry(2, 3*time.Second).EndBytes()
+	request := gorequest.New().Get(destURL).Timeout(5 * time.Second).Retry(2, 3*time.Second)
+	for k, v := range r.Header {
+		request.Header.Set(k, fmt.Sprintf("%s", v))
+	}
+
+	response, bytes, errors := request.EndBytes()
 	if nil != errors {
 		log.Printf("get url [%s] failed: %v", destURL, errors)
 		w.WriteHeader(http.StatusInternalServerError)
