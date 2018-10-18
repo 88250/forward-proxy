@@ -38,6 +38,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(response.StatusCode)
 	w.Write(bytes)
+
+	msg := fmt.Sprintf("[%s] status code [%d]", destURL, response.StatusCode)
+	log.Println(msg)
 }
 
 func main() {
