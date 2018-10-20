@@ -11,6 +11,8 @@ import (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	started := time.Now()
+
 	destURL := r.URL.Query().Get("url")
 	if _, e := url.ParseRequestURI(destURL); nil != e {
 		w.WriteHeader(http.StatusBadRequest)
@@ -18,7 +20,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := gorequest.New().Get(destURL).Timeout(5 * time.Second).Retry(2, 3*time.Second)
+	request := gorequest.New().Get(destURL).Timeout(10 * time.Second).Retry(2, time.Second)
 	for k, v := range r.Header {
 		request.Header.Set(k, fmt.Sprintf("%s", v))
 	}
@@ -39,7 +41,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(response.StatusCode)
 	w.Write(bytes)
 
-	msg := fmt.Sprintf("[%s] status code [%d]", destURL, response.StatusCode)
+	duration := time.Now().Sub(started)
+	msg := fmt.Sprintf("[%s] status code [%d] ellapsed [%.1fs]", destURL, response.StatusCode, duration.Seconds())
 	log.Println(msg)
 }
 
