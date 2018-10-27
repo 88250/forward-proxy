@@ -35,7 +35,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	header := w.Header()
 	for k, v := range response.Header {
-		header.Add(k, fmt.Sprintf("%s", v))
+		header.Add(k, fmt.Sprintf("%s", v[0]))
 	}
 
 	w.WriteHeader(response.StatusCode)
