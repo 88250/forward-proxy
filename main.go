@@ -24,7 +24,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := gorequest.New().Get(destURL).Timeout(10*time.Second).Retry(2, time.Second)
+	request := gorequest.New().Get(destURL).Timeout(10 * time.Second).Retry(2, time.Second)
 	for k, v := range r.Header {
 		request.Header.Set(k, fmt.Sprintf("%s", v))
 	}
@@ -38,6 +38,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
+		"URL":         destURL,
 		"Status":      response.StatusCode,
 		"ContentType": response.Header.Get("content-type"),
 		"Body":        string(bytes),
@@ -60,8 +61,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Write(dataBytes)
 
 	duration := time.Now().Sub(started)
-	msg := fmt.Sprintf("[%s] status code [%d] ellapsed [%.1fs]", destURL, response.StatusCode, duration.Seconds())
-	log.Println(msg)
+	log.Printf("ellapsed [%.1fs] %#v", duration.Seconds(), data)
 }
 
 func main() {
