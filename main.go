@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -24,7 +25,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := gorequest.New().Get(destURL).Timeout(10 * time.Second).Retry(2, time.Second)
+	request := gorequest.New().Get(destURL).Timeout(10*time.Second).Retry(2, time.Second)
 	for k, v := range r.Header {
 		request.Header.Set(k, fmt.Sprintf("%s", v))
 	}
@@ -60,15 +61,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		dataBytes = AESEncrypt(key, dataBytes)
 	}
 
+	dataBytes = []byte(base64.StdEncoding.EncodeToString(dataBytes))
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 	w.Write(dataBytes)
 
 	duration := time.Now().Sub(started)
 	end := len(body)
-	if 64 > end {
-		log.Println("data bytes is [" + string(dataBytes) + "], original body is [" + body + "]")
-	}
 	if 64 < end {
 		end = 64
 	}
