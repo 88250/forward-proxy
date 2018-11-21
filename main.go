@@ -54,7 +54,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	responseDataBytes, e := json.Marshal(responseData)
 	if nil != e {
-		log.Printf("marshal failed %#v", e)
+		log.Printf("marshal original response failed %#v", e)
 		w.WriteHeader(http.StatusInternalServerError)
 
 		return
@@ -66,7 +66,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	retData := map[string]interface{}{"Data": base64.StdEncoding.EncodeToString(responseDataBytes)}
-	retDataBytes, _ := json.Marshal(retData)
+	retDataBytes, e := json.Marshal(retData)
+	if nil != e {
+		log.Printf("marshal response failed %#v", e)
+		w.WriteHeader(http.StatusInternalServerError)
+
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
@@ -79,7 +85,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		shortBody = responseBody[:64]
 	}
-	log.Printf("ellapsed [%.1fs] %s %d %s", duration.Seconds(), responseData["URL"], responseData["Status"], shortBody)
+	log.Printf("ellapsed [%.1fs], length [%d], URL [%s], status [%d], %s",
+		duration.Seconds(), len(retDataBytes), responseData["URL"], responseData["Status"], shortBody)
 }
 
 func main() {
