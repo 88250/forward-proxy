@@ -58,9 +58,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
 	if "" != key {
 		dataBytes = AESEncrypt(key, dataBytes)
-		if 64 > len(dataBytes) {
-			log.Println("data bytes is [" + string(dataBytes) + "]")
-		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -69,10 +66,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	duration := time.Now().Sub(started)
 	end := len(body)
+	if 64 > end {
+		log.Println("data bytes is [" + string(dataBytes) + "], original body is [" + body + "]")
+	}
 	if 64 < end {
 		end = 64
 	}
 	shortBody := body[:end]
+
 	log.Printf("ellapsed [%.1fs] %s %d %s", duration.Seconds(), data["URL"], data["Status"], shortBody)
 }
 
