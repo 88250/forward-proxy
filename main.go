@@ -1,6 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,7 +24,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := gorequest.New().Get(destURL).Timeout(10 * time.Second).Retry(2, time.Second)
+	request := gorequest.New().Get(destURL).Timeout(10*time.Second).Retry(2, time.Second)
 	for k, v := range r.Header {
 		request.Header.Set(k, fmt.Sprintf("%s", v))
 	}
@@ -33,13 +37,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := map[string]interface{}{
+		"Status":      response.StatusCode,
+		"ContentType": response.Header.Get("content-type"),
+		"Body":        string(bytes),
+		"Headers":     response.Header,
+	}
+
 	header := w.Header()
 	for k, v := range response.Header {
 		header.Add(k, fmt.Sprintf("%s", v[0]))
 	}
 
+	dataBytes, _ := json.Marshal(data)
+	key := r.URL.Query().Get("key")
+	if "" != key {
+		dataBytes = AESEncrypt(key, dataBytes)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
-	w.Write(bytes)
+	w.Write(dataBytes)
 
 	duration := time.Now().Sub(started)
 	msg := fmt.Sprintf("[%s] status code [%d] ellapsed [%.1fs]", destURL, response.StatusCode, duration.Seconds())
@@ -50,4 +68,41 @@ func main() {
 	http.HandleFunc("/", handler)
 	log.Println("Start serving on port 8888")
 	http.ListenAndServe(":8888", nil)
+}
+
+func AESEncrypt(key string, data []byte) []byte {
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		return nil
+	}
+	ecb := cipher.NewCBCEncrypter(block, []byte("RandomInitVector"))
+	content := data
+	content = PKCS5Padding(content, block.BlockSize())
+	crypted := make([]byte, len(content))
+	ecb.CryptBlocks(crypted, content)
+
+	return crypted
+}
+
+func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
+	padding := blockSize - len(ciphertext)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padtext...)
+}
+
+func AESDecrypt(key string, crypt []byte) []byte {
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		return nil
+	}
+	ecb := cipher.NewCBCDecrypter(block, []byte("RandomInitVector"))
+	decrypted := make([]byte, len(crypt))
+	ecb.CryptBlocks(decrypted, crypt)
+
+	return PKCS5Trimming(decrypted)
+}
+
+func PKCS5Trimming(encrypt []byte) []byte {
+	padding := encrypt[len(encrypt)-1]
+	return encrypt[:len(encrypt)-int(padding)]
 }

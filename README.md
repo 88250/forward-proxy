@@ -12,7 +12,9 @@ response 返回 JSON 格式数据：
 
 ```json
 {
-    "html": "<html>...</html>",
+    "status": 200,
+    "contentType": "",
+    "body": "...",
     "headers": [
         {"content-type": "text/html;charset=utf-8"},
         {"xxx": "..."}
