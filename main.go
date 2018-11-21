@@ -61,7 +61,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Write(dataBytes)
 
 	duration := time.Now().Sub(started)
-	log.Printf("ellapsed [%.1fs] %#v", duration.Seconds(), data)
+	log.Printf("ellapsed [%.1fs] %s %d", duration.Seconds(), data["URL"], data["Status"])
 }
 
 func main() {
