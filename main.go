@@ -38,12 +38,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body := string(bytes)
-	data := map[string]interface{}{
+	responseBody := string(bytes)
+	responseData := map[string]interface{}{
 		"URL":         destURL,
 		"Status":      response.StatusCode,
 		"ContentType": response.Header.Get("content-type"),
-		"Body":        body,
+		"Body":        responseBody,
 		"Headers":     response.Header,
 	}
 
@@ -52,24 +52,29 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		header.Add(k, fmt.Sprintf("%s", v[0]))
 	}
 
-	dataBytes, e := json.Marshal(data)
+	responseDataBytes, e := json.Marshal(responseData)
 	if nil != e {
 		log.Printf("marshal failed %#v", e)
-	}
-	key := r.URL.Query().Get("key")
-	if "" != key {
-		dataBytes = AESEncrypt(key, dataBytes)
+		w.WriteHeader(http.StatusInternalServerError)
+
+		return
 	}
 
-	dataBytes = []byte(base64.StdEncoding.EncodeToString(dataBytes))
+	key := r.URL.Query().Get("key")
+	if "" != key {
+		responseDataBytes = AESEncrypt(key, responseDataBytes)
+	}
+
+	retData := map[string]interface{}{"Data": base64.StdEncoding.EncodeToString(responseDataBytes)}
+	retDataBytes, _ := json.Marshal(retData)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
-	w.Write(dataBytes)
+	w.Write(retDataBytes)
 
 	duration := time.Now().Sub(started)
-	if 64 > len(body) {
-		log.Printf("ellapsed [%.1fs] %s %d %s", duration.Seconds(), data["URL"], data["Status"], body)
+	if 64 > len(responseBody) {
+		log.Printf("ellapsed [%.1fs] %s %d %s", duration.Seconds(), responseData["URL"], responseData["Status"], responseBody)
 	}
 }
 
