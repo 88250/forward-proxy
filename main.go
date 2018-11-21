@@ -69,8 +69,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	duration := time.Now().Sub(started)
 	if 64 > len(body) {
-		shortBody := body[:64]
-		log.Printf("ellapsed [%.1fs] %s %d %s", duration.Seconds(), data["URL"], data["Status"], shortBody)
+		log.Printf("ellapsed [%.1fs] %s %d %s", duration.Seconds(), data["URL"], data["Status"], body)
 	}
 }
 
