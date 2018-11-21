@@ -37,11 +37,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	body := string(bytes)
 	data := map[string]interface{}{
 		"URL":         destURL,
 		"Status":      response.StatusCode,
 		"ContentType": response.Header.Get("content-type"),
-		"Body":        string(bytes),
+		"Body":        body,
 		"Headers":     response.Header,
 	}
 
@@ -61,7 +62,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Write(dataBytes)
 
 	duration := time.Now().Sub(started)
-	log.Printf("ellapsed [%.1fs] %s %d", duration.Seconds(), data["URL"], data["Status"])
+	end := len(body)
+	if 10 < end {
+		end = 10
+	}
+	shortBody := body[:end-1]
+	log.Printf("ellapsed [%.1fs] %s %d %s", duration.Seconds(), data["URL"], data["Status"], shortBody)
 }
 
 func main() {
