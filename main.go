@@ -25,7 +25,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := gorequest.New().Get(destURL).Timeout(10 * time.Second).Retry(2, time.Second)
+	request := gorequest.New().Get(destURL).Timeout(10*time.Second).Retry(2, time.Second)
 	for k, v := range r.Header {
 		request.Header.Set(k, fmt.Sprintf("%s", v))
 	}
@@ -82,7 +82,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	shortBody := ""
 	if 64 > len(responseBody) {
 		shortBody = responseBody
-		log.Printf("URL [%s], body [%s] ", responseData["URL"], string(retDataBytes))
 	} else {
 		shortBody = responseBody[:64]
 	}
