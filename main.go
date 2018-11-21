@@ -58,6 +58,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
 	if "" != key {
 		dataBytes = AESEncrypt(key, dataBytes)
+		if 64 > len(dataBytes) {
+			log.Println("data bytes is [" + string(dataBytes) + "]")
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
