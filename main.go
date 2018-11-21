@@ -51,7 +51,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		header.Add(k, fmt.Sprintf("%s", v[0]))
 	}
 
-	dataBytes, _ := json.Marshal(data)
+	dataBytes, e := json.Marshal(data)
+	if nil != e {
+		log.Printf("marshal failed %#v", e)
+	}
 	key := r.URL.Query().Get("key")
 	if "" != key {
 		dataBytes = AESEncrypt(key, dataBytes)
