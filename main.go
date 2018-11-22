@@ -71,7 +71,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		shortBody = responseBody[:64]
 	}
 	log.Printf("ellapsed [%.1fs], length [%d], URL [%s], status [%d], body [%s]",
-		duration.Seconds(), len(responseDataBytes), responseData["URL"], responseData["Status"], shortBody)
+		duration.Seconds(), len(responseDataBytes), responseData["url"], responseData["status"], shortBody)
 }
 
 func main() {
