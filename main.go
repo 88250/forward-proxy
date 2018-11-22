@@ -47,11 +47,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		"Headers":     response.Header,
 	}
 
-	header := w.Header()
-	for k, v := range response.Header {
-		header.Add(k, fmt.Sprintf("%s", v[0]))
-	}
-
 	responseDataBytes, e := json.Marshal(responseData)
 	if nil != e {
 		log.Printf("marshal original response failed %#v", e)
