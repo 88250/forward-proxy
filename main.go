@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -40,11 +39,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	responseBody := string(bytes)
 	responseData := map[string]interface{}{
-		"URL":         destURL,
-		"Status":      response.StatusCode,
-		"ContentType": response.Header.Get("content-type"),
-		"Body":        responseBody,
-		"Headers":     response.Header,
+		"url":         destURL,
+		"status":      response.StatusCode,
+		"contentType": response.Header.Get("content-type"),
+		"body":        responseBody,
+		"headers":     response.Header,
 	}
 
 	responseDataBytes, e := json.Marshal(responseData)
@@ -60,18 +59,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		responseDataBytes = AESEncrypt(key, responseDataBytes)
 	}
 
-	retData := map[string]interface{}{"Data": base64.StdEncoding.EncodeToString(responseDataBytes)}
-	retDataBytes, e := json.Marshal(retData)
-	if nil != e {
-		log.Printf("marshal response failed %#v", e)
-		w.WriteHeader(http.StatusInternalServerError)
-
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
-	w.Write(retDataBytes)
+	w.Write(responseDataBytes)
 
 	duration := time.Now().Sub(started)
 	shortBody := ""
@@ -81,7 +71,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		shortBody = responseBody[:64]
 	}
 	log.Printf("ellapsed [%.1fs], length [%d], URL [%s], status [%d], body [%s]",
-		duration.Seconds(), len(retDataBytes), responseData["URL"], responseData["Status"], shortBody)
+		duration.Seconds(), len(responseDataBytes), responseData["URL"], responseData["Status"], shortBody)
 }
 
 func main() {
