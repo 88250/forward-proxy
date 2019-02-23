@@ -6,23 +6,50 @@ import (
 	"crypto/cipher"
 	"encoding/json"
 	"fmt"
-	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/parnurzeal/gorequest"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	started := time.Now()
+var logger *Logger
 
-	destURL := r.URL.Query().Get("url")
-	if _, e := url.ParseRequestURI(destURL); nil != e {
-		w.WriteHeader(http.StatusBadRequest)
+func init() {
+	rand.Seed(time.Now().Unix())
+
+	SetLevel("info")
+	logger = NewLogger(os.Stdout)
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	result := NewResult()
+	if "POST" != r.Method {
+		result.Code = CodeErr
+		result.Msg = "invalid method [" + r.Method + "]"
 
 		return
 	}
+
+	var args map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
+		logger.Error(err)
+		result.Code = CodeErr
+
+		return
+	}
+
+	destURL := args["url"].(string)
+	if _, e := url.ParseRequestURI(destURL); nil != e {
+		result.Code = CodeErr
+		result.Msg = "invalid [url]"
+
+		return
+	}
+
+	started := time.Now()
 
 	request := gorequest.New().Get(destURL).Timeout(10*time.Second).Retry(2, time.Second)
 	for k, v := range r.Header {
@@ -31,8 +58,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	response, bytes, errors := request.EndBytes()
 	if nil != errors {
-		log.Printf("get url [%s] failed: %v", destURL, errors)
-		w.WriteHeader(http.StatusInternalServerError)
+		logger.Infof("get url [%s] failed: %v", destURL, errors)
+		result.Code = CodeErr
+		result.Msg = "internal error"
 
 		return
 	}
@@ -48,13 +76,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	responseDataBytes, e := json.Marshal(responseData)
 	if nil != e {
-		log.Printf("marshal original response failed %#v", e)
+		logger.Errorf("marshal original response failed %#v", e)
 		w.WriteHeader(http.StatusInternalServerError)
 
 		return
 	}
 
-	key := r.URL.Query().Get("key")
+	key := args["key"].(string)
 	if "" != key {
 		responseDataBytes = AESEncrypt(key, responseDataBytes)
 	}
@@ -70,13 +98,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		shortBody = responseBody[:64]
 	}
-	log.Printf("ellapsed [%.1fs], length [%d], URL [%s], status [%d], body [%s]",
+	logger.Infof("ellapsed [%.1fs], length [%d], URL [%s], status [%d], body [%s]",
 		duration.Seconds(), len(responseDataBytes), responseData["url"], responseData["status"], shortBody)
 }
 
 func main() {
 	http.HandleFunc("/", handler)
-	log.Println("Start serving on port 8888")
+	logger.Info("Start serving on port 8888")
 	http.ListenAndServe(":8888", nil)
 }
 
