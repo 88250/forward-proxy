@@ -52,8 +52,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	started := time.Now()
 
 	request := gorequest.New().Get(destURL).Timeout(10*time.Second).Retry(2, time.Second)
-	for k, v := range r.Header {
-		request.Header.Set(k, fmt.Sprintf("%s", v))
+	headers := args["headers"].([]interface{})
+	for _, pair := range headers {
+		for k, v := range pair.(map[string]interface{}) {
+			request.Header.Set(k, fmt.Sprintf("%s", v))
+		}
 	}
 
 	response, bytes, errors := request.EndBytes()
@@ -66,15 +69,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseBody := string(bytes)
-	responseData := map[string]interface{}{
+	data := map[string]interface{}{
 		"url":         destURL,
 		"status":      response.StatusCode,
 		"contentType": response.Header.Get("content-type"),
 		"body":        responseBody,
 		"headers":     response.Header,
 	}
+	result.Data = data
 
-	responseDataBytes, e := json.Marshal(responseData)
+	responseDataBytes, e := json.Marshal(result)
 	if nil != e {
 		logger.Errorf("marshal original response failed %#v", e)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -99,7 +103,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		shortBody = responseBody[:64]
 	}
 	logger.Infof("ellapsed [%.1fs], length [%d], URL [%s], status [%d], body [%s]",
-		duration.Seconds(), len(responseDataBytes), responseData["url"], responseData["status"], shortBody)
+		duration.Seconds(), len(responseDataBytes), data["url"], data["status"], shortBody)
 }
 
 func main() {
