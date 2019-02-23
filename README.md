@@ -1,24 +1,24 @@
 # forward-proxy
 
-* 监听端口 8888
-* 使用 POST 提交代理请求
-  ```json
-  {
+使用 POST 提交代理请求：
+
+```json
+{
     "url": "https://github.com", 
     "headers": [
-      {
-        "User-Agent": ""
-      }, 
-      {
-        "Connection": "close"
-      }
+        {
+            "User-Agent": ""
+        }, 
+        {
+            "Connection": "close"
+        }
     ], 
     "method": "get", 
     "key": "aes key"
-  }
-  ```
+}
+```
 
-response 返回 JSON 格式数据：
+响应返回 JSON 格式数据：
 
 ```json
 {
