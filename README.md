@@ -13,8 +13,7 @@
             "Connection": "close"
         }
     ], 
-    "method": "get", 
-    "key": "aes key"
+    "method": "get"
 }
 ```
 
