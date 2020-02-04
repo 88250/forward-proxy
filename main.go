@@ -51,19 +51,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	started := time.Now()
 
-	request := gorequest.New()
-	if "get" == method || "" == method {
-		request = request.Get(destURL)
-	} else if "post" == method {
-		request = request.Post(destURL)
-	}
-	request.Timeout(10*time.Second).Retry(2, time.Second)
-
+	request := gorequest.New().CustomMethod(method, destURL).Timeout(10*time.Second).Retry(2, time.Second)
 	headers := args["headers"].([]interface{})
 	for _, pair := range headers {
 		for k, v := range pair.(map[string]interface{}) {
 			request.Header.Set(k, fmt.Sprintf("%s", v))
 		}
+	}
+
+	if "post" == method {
+		request.SendMap(args["payload"])
 	}
 
 	response, bytes, errors := request.EndBytes()
