@@ -60,7 +60,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if "post" == method {
-		request.SendString(args["payload"].(string))
+		request.RawString = args["payload"].(string)
 	}
 
 	contentType := args["contentType"]
