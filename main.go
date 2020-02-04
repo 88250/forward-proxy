@@ -101,8 +101,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		shortBody = responseBody[:64]
 	}
-	logger.Infof("elapsed [%.1fs], length [%d], URL [%s], Headers [%s], status [%d], body [%s]",
-		duration.Seconds(), len(responseDataBytes), data["url"], headers, data["status"], shortBody)
+	logger.Infof("elapsed [%.1fs], length [%d], req [url=%s, headers=%s, body=%s], status [%d], body [%s]",
+		duration.Seconds(), len(responseDataBytes), data["url"], headers, args["payload"], data["status"], shortBody)
 }
 
 func main() {
