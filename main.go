@@ -9,22 +9,23 @@ import (
 	"os"
 	"time"
 
+	"github.com/88250/gulu"
 	"github.com/parnurzeal/gorequest"
 )
 
-var logger *Logger
+var logger *gulu.Logger
 
 func init() {
 	rand.Seed(time.Now().Unix())
 
-	SetLevel("info")
-	logger = NewLogger(os.Stdout)
+	gulu.Log.SetLevel("info")
+	logger = gulu.Log.NewLogger(os.Stdout)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	result := NewResult()
+	result := gulu.Ret.NewResult()
 	if "POST" != r.Method {
-		result.Code = CodeErr
+		result.Code = -1
 		result.Msg = "invalid method [" + r.Method + "]"
 
 		return
@@ -33,14 +34,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	var args map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
 		logger.Error(err)
-		result.Code = CodeErr
+		result.Code = -1
 
 		return
 	}
 
 	destURL := args["url"].(string)
 	if _, e := url.ParseRequestURI(destURL); nil != e {
-		result.Code = CodeErr
+		result.Code = -1
 		result.Msg = "invalid [url]"
 
 		return
@@ -59,7 +60,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	response, bytes, errors := request.EndBytes()
 	if nil != errors {
 		logger.Infof("get url [%s] failed: %v", destURL, errors)
-		result.Code = CodeErr
+		result.Code = -1
 		result.Msg = "internal error"
 
 		return
@@ -94,8 +95,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		shortBody = responseBody[:64]
 	}
-	logger.Infof("ellapsed [%.1fs], length [%d], URL [%s], status [%d], body [%s]",
-		duration.Seconds(), len(responseDataBytes), data["url"], data["status"], shortBody)
+	logger.Infof("elapsed [%.1fs], length [%d], URL [%s], Headers [%s], status [%d], body [%s]",
+		duration.Seconds(), len(responseDataBytes), data["url"], headers, data["status"], shortBody)
 }
 
 func main() {
