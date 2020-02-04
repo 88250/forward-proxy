@@ -51,7 +51,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	started := time.Now()
 
-	request := gorequest.New().CustomMethod(method, destURL).Timeout(10*time.Second).Retry(2, time.Second)
+	request := gorequest.New().CustomMethod(method, destURL).Timeout(10*time.Second)
 	headers := args["headers"].([]interface{})
 	for _, pair := range headers {
 		for k, v := range pair.(map[string]interface{}) {
@@ -65,12 +65,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	contentType := args["contentType"]
 	if nil != contentType && "" != contentType {
-		request.Header.Set("content-type", contentType.(string))
+		request.Header.Set("Content-Type", contentType.(string))
 	}
 
 	response, bytes, errors := request.EndBytes()
 	if nil != errors {
-		logger.Infof("get url [%s] failed: %v", destURL, errors)
+		logger.Infof("request url [%s] failed: %v", destURL, errors)
 		result.Code = -1
 		result.Msg = "internal error"
 
