@@ -63,6 +63,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		request.SendString(args["payload"].(string))
 	}
 
+	contentType := args["contentType"]
+	if nil != contentType && "" != contentType {
+		request.Header.Set("content-type", contentType.(string))
+	}
+
 	response, bytes, errors := request.EndBytes()
 	if nil != errors {
 		logger.Infof("get url [%s] failed: %v", destURL, errors)
@@ -101,8 +106,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		shortBody = responseBody[:64]
 	}
-	logger.Infof("elapsed [%.1fs], length [%d], req [url=%s, headers=%s, body=%s], status [%d], body [%s]",
-		duration.Seconds(), len(responseDataBytes), data["url"], headers, args["payload"], data["status"], shortBody)
+	logger.Infof("elapsed [%.1fs], length [%d], req [url=%s, headers=%s, content-type=%s, body=%s], status [%d], body [%s]",
+		duration.Seconds(), len(responseDataBytes), data["url"], headers, contentType, args["payload"], data["status"], shortBody)
 }
 
 func main() {
