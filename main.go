@@ -59,13 +59,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if "post" == method {
-		request.RawString = args["payload"].(string)
-	}
-
 	contentType := args["contentType"]
 	if nil != contentType && "" != contentType {
 		request.Header.Set("Content-Type", contentType.(string))
+	}
+
+	if "post" == method {
+		request.SendString(args["payload"].(string))
 	}
 
 	response, bytes, errors := request.EndBytes()
