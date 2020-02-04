@@ -1,9 +1,9 @@
 #!/bin/bash
 
-cd /root/go/src/github.com/b3log/forward-proxy/ && git checkout . && git pull
+cd /root/go/src/github.com/88250/forward-proxy/ && git checkout . && git pull
 go build
 
-proc_num=`ps -fe|grep '/root/go/src/github.com/b3log/forward-proxy/forward-proxy'|grep -v grep|wc -l`
+proc_num=`ps -fe|grep '/root/go/src/github.com/88250/forward-proxy/forward-proxy'|grep -v grep|wc -l`
 if [ $proc_num -gt 0 ]
 then
   killall forward-proxy
@@ -11,6 +11,6 @@ then
   sleep 1
 fi
 
-nohup /root/go/src/github.com/b3log/forward-proxy/forward-proxy > /var/log/forward-proxy/forward-proxy.log 2>&1 &
+nohup /root/go/src/github.com/88250/forward-proxy/forward-proxy > /var/log/forward-proxy/forward-proxy.log 2>&1 &
 
 echo 'forward-proxy done'
