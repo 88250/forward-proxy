@@ -104,7 +104,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if 64 > len(responseBody) {
 		shortBody = responseBody
 	} else {
-		shortBody = responseBody[:64]
+		//shortBody = responseBody[:64]
+		shortBody = responseBody
 	}
 	logger.Infof("elapsed [%.1fs], length [%d], req [url=%s, headers=%s, content-type=%s, body=%s], status [%d], body [%s]",
 		duration.Seconds(), len(responseDataBytes), data["url"], headers, contentType, args["payload"], data["status"], shortBody)
