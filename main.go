@@ -47,9 +47,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	method := args["method"].(string)
+
 	started := time.Now()
 
-	request := gorequest.New().Get(destURL).Timeout(10*time.Second).Retry(2, time.Second)
+	request := gorequest.New()
+	if "get" == method || "" == method {
+		request = request.Get(destURL)
+	} else if "post" == method {
+		request = request.Post(destURL)
+	}
+	request.Timeout(10*time.Second).Retry(2, time.Second)
+
 	headers := args["headers"].([]interface{})
 	for _, pair := range headers {
 		for k, v := range pair.(map[string]interface{}) {
