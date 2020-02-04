@@ -60,7 +60,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if "post" == method {
-		request.SendMap(args["payload"])
+		request.SendString(args["payload"].(string))
 	}
 
 	response, bytes, errors := request.EndBytes()
