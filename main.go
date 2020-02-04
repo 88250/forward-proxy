@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/88250/gulu"
@@ -47,7 +48,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	method := args["method"].(string)
+	method := strings.ToUpper(args["method"].(string))
 
 	started := time.Now()
 
@@ -64,7 +65,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		request.Header.Set("Content-Type", contentType.(string))
 	}
 
-	if "post" == method {
+	if "POST" == method {
 		request.SendString(args["payload"].(string))
 	}
 
