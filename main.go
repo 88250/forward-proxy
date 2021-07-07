@@ -114,5 +114,5 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", handler)
 	logger.Info("Start serving on port 8888")
-	http.ListenAndServe(":8888", nil)
+	http.ListenAndServe("127.0.0.1:8888", nil)
 }
