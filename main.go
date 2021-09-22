@@ -24,19 +24,18 @@ func init() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	result := gulu.Ret.NewResult()
 	if "POST" != r.Method {
-		result.Code = -1
-		result.Msg = "invalid method [" + r.Method + "]"
-
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(200)
+		w.Write([]byte("The piper will lead us to reason.\n\n记录生活，连接点滴 https://ld246.com"))
 		return
 	}
 
+	result := gulu.Ret.NewResult()
 	var args map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
 		logger.Error(err)
 		result.Code = -1
-
 		return
 	}
 
@@ -44,7 +43,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if _, e := url.ParseRequestURI(destURL); nil != e {
 		result.Code = -1
 		result.Msg = "invalid [url]"
-
 		return
 	}
 
@@ -52,7 +50,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	started := time.Now()
 
-	request := gorequest.New().CustomMethod(method, destURL).Timeout(10*time.Second)
+	request := gorequest.New().CustomMethod(method, destURL).Timeout(10 * time.Second)
 	headers := args["headers"].([]interface{})
 	for _, pair := range headers {
 		for k, v := range pair.(map[string]interface{}) {
@@ -74,7 +72,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("request url [%s] failed: %v", destURL, errors)
 		result.Code = -1
 		result.Msg = "internal error"
-
 		return
 	}
 
@@ -92,7 +89,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if nil != e {
 		logger.Errorf("marshal original response failed %#v", e)
 		w.WriteHeader(http.StatusInternalServerError)
-
 		return
 	}
 
