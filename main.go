@@ -27,7 +27,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if "POST" != r.Method {
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(200)
-		w.Write([]byte("The piper will lead us to reason.\n\n记录生活，连接点滴 https://ld246.com"))
+		msg := "The piper will lead us to reason.\n\n记录生活，连接点滴 https://ld246.com"
+		logger.Infof("request method [%s] is not supported, return [%s]", r.Method, msg)
+		w.Write([]byte(msg))
 		return
 	}
 
