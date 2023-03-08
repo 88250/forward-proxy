@@ -47,10 +47,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	method := strings.ToUpper(args["method"].(string))
+	timeoutArg := args["timeout"]
+	timeout := 10
+	if nil != timeoutArg {
+		timeout = int(timeoutArg.(float64))
+		if 1 > timeout {
+			timeout = 10
+		}
+	}
 
 	started := time.Now()
 
-	request := gorequest.New().CustomMethod(method, destURL).Timeout(10 * time.Second)
+	request := gorequest.New().CustomMethod(method, destURL).Timeout(time.Duration(timeout) * time.Second)
 	headers := args["headers"].([]interface{})
 	for _, pair := range headers {
 		for k, v := range pair.(map[string]interface{}) {
