@@ -72,7 +72,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if "POST" == method {
-		request.SendString(args["payload"].(string))
+		switch args["payload"].(type) {
+		case string:
+			request.SendString(args["payload"].(string))
+		case map[string]interface{}:
+			request.SendMap(args["payload"])
+		default:
+			logger.Errorf("unknown payload type [%T]", args["payload"])
+		}
 	}
 
 	response, bytes, errors := request.EndBytes()
